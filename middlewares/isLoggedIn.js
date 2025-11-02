@@ -8,7 +8,7 @@ const isloggedin = async(req, res, next) =>{
     if (cookies === "" || cookies === undefined) {
        return res.status(401).json({
             success:false,
-            message:"|You are not logged In| please login..."
+            message:"You are not logged In"
         })
     }
     else {

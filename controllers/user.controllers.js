@@ -155,26 +155,26 @@ export const login = async (req, res) => {
                                 ]
                             },
                         },
-                          //lookup for followers
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "followers",
-                        foreignField: "_id",
-                        as: "followers",
-                        pipeline: [{ $project: { password: 0 } }]
-                    }
-                },
-                //lookup for following
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "following",
-                        foreignField: "_id",
-                        as: "following",
-                        pipeline: [{ $project: { password: 0 } }]
-                    }
-                },
+                        //lookup for followers
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "followers",
+                                foreignField: "_id",
+                                as: "followers",
+                                pipeline: [{ $project: { password: 0 } }]
+                            }
+                        },
+                        //lookup for following
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "following",
+                                foreignField: "_id",
+                                as: "following",
+                                pipeline: [{ $project: { password: 0 } }]
+                            }
+                        },
                         { $project: { password: 0 } },
                     ])
 
@@ -182,7 +182,12 @@ export const login = async (req, res) => {
                     let token = jwt.sign({ email: email, userid: user[0]._id }, process.env.JWT_KEY)
                     console.log(token, "token")
 
-                    return res.cookie("token", token)
+                    return res.cookie("token", token, {
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: "none",
+                        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                    })
                         .json({
                             message: "user login successful...",
                             success: true,
@@ -298,7 +303,7 @@ export const getCurrentUser = async (req, res) => {
                         ]
                     },
                 },
-                  //lookup for followers
+                //lookup for followers
                 {
                     $lookup: {
                         from: "users",
@@ -481,7 +486,7 @@ export const getUserProfile = async (req, res) => {
                     }
                 },
 
-                
+
                 { $project: { password: 0 } },
             ])
 
@@ -533,7 +538,7 @@ export const followUnfollowUser = async (req, res) => {
             return res.status(201).json({
                 success: true,
                 message: "user followed done",
-                user:currentuser_data
+                user: currentuser_data
             })
         } else {
             const newFollowersData = userFollowers?.followers.filter((userId) => {
@@ -549,7 +554,7 @@ export const followUnfollowUser = async (req, res) => {
             return res.status(201).json({
                 success: true,
                 message: "user unfollowed done",
-                user:currentuser_data
+                user: currentuser_data
 
             })
         }
