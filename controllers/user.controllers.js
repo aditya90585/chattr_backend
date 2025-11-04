@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken"
 
 import usermodel from "../models/user.model.js"
 import postmodel from "../models/post.model.js"
+import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { deleteFromCloudinary } from "../utils/cloudinary.js"
 
 
 export const register = async (req, res) => {
@@ -568,5 +570,80 @@ export const followUnfollowUser = async (req, res) => {
             })
         }
 
+    }
+}
+
+export const changeProfilePic = async (req, res) => {
+    try {
+        const email = await req?.user?.email
+        const imagelocalPath = await req.file?.path
+
+        const user = await usermodel.findOne({ email: email })
+
+
+        if (!imagelocalPath) {
+            return res.status(401).json({
+                message: "image file is missing...",
+                success: false
+            })
+        }
+
+        const cloudinaryuploader = await uploadOnCloudinary({ localFilePath: imagelocalPath })
+        if (!cloudinaryuploader) {
+            return res.status(401).json(
+                {
+                    message: "error occur while uploading file to cloud",
+                    success: false
+                }
+            )
+        }
+
+        const updateduser = await usermodel.findOneAndUpdate({ email }, { $set: { profile_pic_url: cloudinaryuploader.url } })
+        if (updateduser) {
+            if (user.profile_pic_url != "https://res.cloudinary.com/dm3xoqps6/image/upload/v1759296413/tq7hzya06f5vagcfle8l.jpg") {
+                const deleteOldpic = deleteFromCloudinary({ fileUrl: user.profile_pic_url })
+            }
+            return res.status(201).json({
+                message: "Profile_pic changed  successfull...",
+                success: "true",
+                data: cloudinaryuploader.url
+            })
+        }
+
+    } catch (error) {
+        console.log(error?.message, "error")
+        if (error) {
+            return res.status(401).json({
+                message: error?.message,
+                success: false
+            })
+        }
+    }
+}
+
+export const editProfileDetails = async (req, res) => {
+    try {
+        const email = await req?.user?.email
+        const data = await req.body.data
+        if (!data) return res.status(401).json(
+            {
+                message: "no data found to update",
+                success: false
+            }
+        )
+
+        const user = await usermodel.findOneAndUpdate({ email }, { $set: { fullname: data.fullname, bio: data.bio } })
+        if (user) return res.status(201).json({
+            message: "profile updated successfully...",
+            success: "true",
+        })
+    } catch (error) {
+        console.log(error?.message, "error")
+        if (error) {
+            return res.status(401).json({
+                message: error?.message,
+                success: false
+            })
+        }
     }
 }

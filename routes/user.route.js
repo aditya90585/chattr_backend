@@ -1,7 +1,8 @@
 import express from "express"
 import bcrypt from "bcrypt"
-import { followUnfollowUser, getCurrentUser, getUserProfile, login, logout, register, SearchUser } from "../controllers/user.controllers.js"
+import { changeProfilePic, editProfileDetails, followUnfollowUser, getCurrentUser, getUserProfile, login, logout, register, SearchUser } from "../controllers/user.controllers.js"
 import isloggedin from "../middlewares/isLoggedIn.js"
+import { upload } from "../middlewares/multer.js"
 
 const userRoute = express.Router()
 
@@ -12,5 +13,7 @@ userRoute.get("/logout",isloggedin,logout)
 userRoute.get("/search",SearchUser)
 userRoute.get("/getprofile/:username",getUserProfile)
 userRoute.get("/followunfollow/:id",isloggedin,followUnfollowUser)
+userRoute.post("/changeprofilepic",upload.single("profileImage"),isloggedin,changeProfilePic)
+userRoute.post("/editprofile",isloggedin,editProfileDetails)
 
 export default userRoute

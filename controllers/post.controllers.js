@@ -61,6 +61,7 @@ export const deletePost = async (req, res) => {
         if (findPost?.author_id == userid) {
             const post = await postmodel.findOneAndDelete({ _id: post_id })
             const deletefromcloud = await deleteFromCloudinary({ fileUrl: post?.imageUrl })
+            
             if (!deleteFromCloudinary) {
                 return res.status(401).json(
                     {
