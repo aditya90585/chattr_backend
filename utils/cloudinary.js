@@ -34,11 +34,11 @@ export const deleteFromCloudinary = async ({ fileUrl }) => {
     try {
         if (!fileUrl) return
         const parts = fileUrl.split("/");
-        console.log(parts)
         const publicIdWithExt = parts.slice(parts.indexOf("upload") + 2).join("/"); // skip version part
         const publicId = publicIdWithExt.replace(/\.[^/.]+$/, ""); // remove extension
         const result = await cloudinary.uploader.destroy(publicId)
         return result
+        
     } catch (error) {
         console.log(error, "cloudinary delete error")
         return null

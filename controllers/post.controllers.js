@@ -1,4 +1,3 @@
-import mongoose, { Mongoose } from "mongoose";
 import commentmodel from "../models/comment.model.js";
 import postmodel from "../models/post.model.js";
 import usermodel from "../models/user.model.js";
@@ -57,12 +56,13 @@ export const deletePost = async (req, res) => {
         const post_id = await req?.params?.id
         const findPost = await postmodel.findOne({ _id: post_id }).select("author_id")
 
-
         if (findPost?.author_id == userid) {
             const post = await postmodel.findOneAndDelete({ _id: post_id })
+            const comments = await commentmodel.deleteMany({ post: post_id })
+
             const deletefromcloud = await deleteFromCloudinary({ fileUrl: post?.imageUrl })
-            
-            if (!deleteFromCloudinary) {
+
+            if (!deletefromcloud) {
                 return res.status(401).json(
                     {
                         message: "error occur while deleting file from cloud",

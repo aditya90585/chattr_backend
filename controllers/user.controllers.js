@@ -5,6 +5,7 @@ import usermodel from "../models/user.model.js"
 import postmodel from "../models/post.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { deleteFromCloudinary } from "../utils/cloudinary.js"
+import mongoose from "mongoose"
 
 
 export const register = async (req, res) => {
@@ -383,11 +384,24 @@ export const SearchUser = async (req, res) => {
 export const getUserProfile = async (req, res) => {
     try {
         const username = await req?.params?.username
+        let _id
+        if (mongoose.Types.ObjectId.isValid(username)) {
+            _id = new mongoose.Types.ObjectId(username)
+        }
+
         if (username) {
             //populate posts of user
 
             const user = await usermodel.aggregate([
-                { $match: { username } },
+                {
+                    $match:
+                    {
+                        $or: [
+                            { username },
+                            { _id }
+                        ]
+                    }
+                },
                 {
                     $lookup: {
                         from: "posts",
@@ -491,6 +505,7 @@ export const getUserProfile = async (req, res) => {
 
                 { $project: { password: 0 } },
             ])
+
 
             if (user) {
                 return res.status(201)
