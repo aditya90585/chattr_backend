@@ -3,13 +3,6 @@ import conversationmodel from "../models/conversation.model.js"
 import { messagemodel } from "../models/message.model.js"
 import mongoose from "mongoose"
 
-export const getfollowedfollowingUsers = async (req, res) => {
-    try {
-
-    } catch (error) {
-
-    }
-}
 
 export const findCreateConversation = async ({ peerId, socket, userId }) => {
     if (!peerId || !userId) return
@@ -46,10 +39,10 @@ export const storeMessage = async ({ sender, receiver, message, conversationId }
 export const getConversationMessages = async (req, res) => {
     try {
         const conversationId = await req?.params?.conversationId
-        if(!conversationId){
+        if (!conversationId) {
             res.status(401).json({
-                success:false,
-                message:"could not find conversationId"
+                success: false,
+                message: "could not find conversationId"
             })
         }
         const conversation = await conversationmodel.aggregate([
@@ -64,19 +57,51 @@ export const getConversationMessages = async (req, res) => {
             }
 
         ])
-        if(!conversation){
+        if (!conversation) {
             res.status(401).json({
-                success:false,
-                message:"could not find conversation"
+                success: false,
+                message: "could not find conversation"
             })
         }
 
         res.status(201).json({
-                success:true,
-                message:"conversation send success",
-                conversation:conversation[0]
-            })
+            success: true,
+            message: "conversation send success",
+            conversation: conversation[0]
+        })
     } catch (error) {
-
+        console.log(error.message, "get conv error")
+        res.status(401).json({
+            success: false,
+            message: error?.message || "some error occured while getting messages"
+        })
     }
+}
+
+export const getPreviousChats = async (req, res) => {
+    try {
+        const currentUser_id = await req?.user?.userid
+
+        const conversations = await conversationmodel.find({ participants: { _id: currentUser_id } }).select("participants").populate("participants")
+
+
+        const getPeerIds = await conversations.map((conversation) => {
+            return conversation?.participants.filter((participants) => {
+                return participants?._id?.toString() != currentUser_id
+            })
+        })
+        res.status(201).json({
+            success:true,
+            message:"previous chats fetched successfull",
+            data:getPeerIds
+        })
+
+    } catch (error) {
+        console.log(error.message, "get previous chats error")
+        res.status(401).json({
+            success: false,
+            message: error?.message || "some error occured while getting previous chats"
+        })
+    }
+
 }
