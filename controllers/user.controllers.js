@@ -218,7 +218,29 @@ export const login = async (req, res) => {
 }
 
 export const logout = (req, res) => {
-    return res.cookie("token", "")
+    try {
+        return res.cookie("token", "", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        })
+            .json({
+                message: "user logout successful...",
+                success: true,
+            })
+
+
+    } catch (error) {
+        console.log(error)
+        if (error) {
+            return res.status(401).json({
+                message: error?.message || "Network error in logout",
+                success: false
+            })
+        }
+
+    }
 }
 
 export const getCurrentUser = async (req, res) => {
