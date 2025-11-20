@@ -497,9 +497,82 @@ export const getUserProfile = async (req, res) => {
                                     pipeline: [{ $project: { password: 0 } }]
                                 }
                             },
+                        ]
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "posts",
+                        localField: "save_posts",
+                        foreignField: "_id",
+                        as: "save_posts",
+                        // lookup for user
+                        pipeline: [
+                            { $sort: { _id: -1 } },
+                            {
+                                $lookup: {
+                                    from: "users",
+                                    localField: "author_id",
+                                    foreignField: "_id",
+                                    as: "author_id",
+                                    pipeline: [
+                                        {
+                                            $project: {
+                                                password: 0
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                $addFields: {
+                                    author_id: { $arrayElemAt: ["$author_id", 0] }
+                                }
+                            },
 
+                            //lookup for comments
+                            {
+                                $lookup: {
+                                    from: "comments",
+                                    localField: "comments",
+                                    foreignField: "_id",
+                                    as: "comments",
+                                    pipeline: [
+                                        { $sort: { _id: -1 } },
+                                        {
+                                            $lookup: {
+                                                from: "users",
+                                                localField: "author",
+                                                foreignField: "_id",
+                                                as: "author",
+                                                pipeline: [
+                                                    {
+                                                        $project: {
+                                                            password: 0
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            $addFields: {
+                                                author: { $arrayElemAt: ["$author", 0] }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
 
-
+                            //lookup for likes
+                            {
+                                $lookup: {
+                                    from: "users",
+                                    localField: "like",
+                                    foreignField: "_id",
+                                    as: "like",
+                                    pipeline: [{ $project: { password: 0 } }]
+                                }
+                            },
                         ]
                     },
                 },

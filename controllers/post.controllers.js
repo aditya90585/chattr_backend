@@ -212,3 +212,42 @@ export const PostComment = async (req, res) => {
         })
     }
 }
+
+
+export const savePost = async (req, res) => {
+    try {
+        const post_id = await req?.params?.id
+        const user_id = await req?.user?.userid
+
+        const usersave_posts = await usermodel.findOne({ _id: user_id }).select("save_posts")
+
+        if (usersave_posts?.save_posts.indexOf(post_id) == -1) {
+            const updateduser = await usermodel.findOneAndUpdate({ _id: user_id }, { $push: { save_posts: post_id } })
+            if (updateduser) {
+                res.status(201).json({
+                    success: true,
+                    message: "post saved success",
+                })
+            }
+        }
+        else {
+            const newuser_saveposts = usersave_posts?.save_posts.filter((postid) => {
+                return postid != post_id
+            })
+            const updateduser = await usermodel.findOneAndUpdate({ _id: user_id }, { $set: { save_posts:newuser_saveposts } })
+            if (updateduser) {
+                res.status(201).json({
+                    success: true,
+                    message: "post unsaved success",
+                })
+            }
+        }
+
+    } catch (error) {
+          console.log(error.message, "error in save posts")
+        return res.status(401).json({
+            message: error?.message || "some error occur while save posts",
+            success: false
+        })
+    }
+}
