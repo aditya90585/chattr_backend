@@ -1,12 +1,13 @@
 import express from "express"
 import bcrypt from "bcrypt"
-import { changeProfilePic, editProfileDetails, followUnfollowUser, getCurrentUser, getUserProfile, login, logout, register, SearchUser } from "../controllers/user.controllers.js"
+import { changeProfilePic, checkUsernameUnique, editProfileDetails, followUnfollowUser, getCurrentUser, getUserProfile, login, logout, register, SearchUser } from "../controllers/user.controllers.js"
 import isloggedin from "../middlewares/isLoggedIn.js"
 import { upload } from "../middlewares/multer.js"
 
 const userRoute = express.Router()
 
 userRoute.post("/register",register)
+userRoute.get("/isusernameunique",checkUsernameUnique)
 userRoute.post("/login",login)
 userRoute.get("/getcurrentuser",isloggedin,getCurrentUser)
 userRoute.get("/logout",isloggedin,logout)

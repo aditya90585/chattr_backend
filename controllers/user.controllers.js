@@ -757,3 +757,28 @@ export const editProfileDetails = async (req, res) => {
         }
     }
 }
+
+export const checkUsernameUnique = async (req, res) => {
+    try {
+        const username = await req?.query?.username
+        const user = await usermodel.findOne({ username })
+        if (user) {
+            return res.status(409).json({
+                message: "username is already in use",
+                success: false
+            })
+        }
+        return res.status(200).json({
+            message: "username is unique",
+            success: true
+        })
+    } catch (error) {
+        console.log(error?.message, "error")
+        if (error) {
+            return res.status(500).json({
+                message: error?.message,
+                success: false
+            })
+        }
+    }
+}
